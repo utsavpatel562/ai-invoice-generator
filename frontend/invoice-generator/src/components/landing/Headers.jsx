@@ -2,11 +2,12 @@
 import { useEffect, useState } from "react";
 import { FileText, Menu, X } from "lucide-react";
 import { Link } from "react-router-dom";
+import ProfileDropdown from "../layout/ProfileDropdown";
 const Headers = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  const isAuthenticated = false;
+  const isAuthenticated = true;
   const user = { name: "Utsav", email: "utsav@gmail.com" };
   const logout = () => {};
 
@@ -58,7 +59,17 @@ const Headers = () => {
             </div>
             <div className="hidden lg:flex items-center space-x-4">
               {isAuthenticated ? (
-                <>Get Started</>
+                <ProfileDropdown
+                  isOpen={profileDropDownOpen}
+                  onToggle={(e) => {
+                    e.stopPropagation();
+                    setProfileDropDownOpen(!profileDropDownOpen);
+                  }}
+                  avatar={user?.avatar || ""}
+                  companyName={user?.name || ""}
+                  email={user?.email || ""}
+                  onLogout={logout}
+                />
               ) : (
                 <>
                   <Link
@@ -69,7 +80,7 @@ const Headers = () => {
                   </Link>
                   <Link
                     to={"/signup"}
-                    className="bg-gradient-to-r from-orange-500 to-orange-600 hover:bg-orange-400 text-white px-6 py-2 rounded-lg font-medium transition-all duration-200 hover:scale-105 hover:shadow-lg"
+                    className="bg-linear-to-r from-orange-500 to-orange-600 hover:bg-orange-400 text-white px-6 py-2 rounded-lg font-medium transition-all duration-200 hover:scale-105 hover:shadow-lg"
                   >
                     Sign Up
                   </Link>
