@@ -39,34 +39,53 @@ const Headers = () => {
             <div className="hidden lg:flex lg:items-center lg:space-x-8">
               <a
                 href="#features"
-                className="text-gray-600 hover:text-gray-900 font-medium transition-colors duration-200 relative after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-black after:transition-all hover:after:w-full"
+                className="text-gray-600 hover:text-gray-900 font-medium transition-colors duration-200 relative after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-orange-500 after:transition-all hover:after:w-full"
               >
                 Features
               </a>
-              <a href="#testimonials" className="">
+              <a
+                href="#testimonials"
+                className="text-gray-600 hover:text-gray-900 font-medium transition-colors duration-200 relative after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-orange-500 after:transition-all hover:after:w-full"
+              >
                 Testimonials
               </a>
-              <a href="#faq" className="">
+              <a
+                href="#faq"
+                className="text-gray-600 hover:text-gray-900 font-medium transition-colors duration-200 relative after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-orange-500 after:transition-all hover:after:w-full"
+              >
                 FAQs
               </a>
             </div>
             <div className="hidden lg:flex items-center space-x-4">
-              <Link
-                to={"/login"}
-                className="text-black hover:text-gray-900 font-medium transition-colors duration-200"
-              >
-                Login
-              </Link>
-              <Link
-                to={"/signup"}
-                className="bg-gradient-to-r from-orange-500 to-orange-600 hover:bg-orange-400 text-white px-6 py-2.5 rounded-lg font-medium transition-all duration-200 hover:scale-105 hover:shadow-lg"
-              >
-                Sign Up
-              </Link>
+              {isAuthenticated ? (
+                <>Get Started</>
+              ) : (
+                <>
+                  <Link
+                    to={"/login"}
+                    className="text-black hover:text-gray-900 font-medium transition-colors duration-200"
+                  >
+                    Login
+                  </Link>
+                  <Link
+                    to={"/signup"}
+                    className="bg-gradient-to-r from-orange-500 to-orange-600 hover:bg-orange-400 text-white px-6 py-2 rounded-lg font-medium transition-all duration-200 hover:scale-105 hover:shadow-lg"
+                  >
+                    Sign Up
+                  </Link>
+                </>
+              )}
             </div>
-            <div className="">
-              <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="">
-                {isMenuOpen ? <X className="" /> : <Menu className="" />}
+            <div className="lg:hidden ">
+              <button
+                onClick={() => setIsMenuOpen(!isMenuOpen)}
+                className="p-2 rounded-lg text-gray-900 hover:bg-gray-100 transition-colors duration-200"
+              >
+                {isMenuOpen ? (
+                  <X className="w-6 h-6" />
+                ) : (
+                  <Menu className="w-6 h-6" />
+                )}
               </button>
             </div>
           </div>
