@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { FileText, Menu, X } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import ProfileDropdown from "../layout/ProfileDropdown";
 const Headers = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -10,6 +10,8 @@ const Headers = () => {
   const isAuthenticated = true;
   const user = { name: "Utsav", email: "utsav@gmail.com" };
   const logout = () => {};
+
+  const navigate = useNavigate();
 
   const [profileDropDownOpen, setProfileDropDownOpen] = useState(false);
   useEffect(() => {
@@ -101,6 +103,41 @@ const Headers = () => {
             </div>
           </div>
         </div>
+        {isMenuOpen && (
+          <div className="lg:hidden absolute top-full left-0 right-0 bg-white border-b border-gray-200 shadow-lg">
+            <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+              <a
+                href="#features"
+                className="block px-4 py-3 text-gray-600 hover:text-gray-900 hover:bg-gray-50 font-medium transition-colors duration-200"
+              >
+                Features
+              </a>
+              <a href="#testimonials" className="">
+                Testimonials
+              </a>
+              <a href="#faq" className="">
+                FAQs
+              </a>
+              <div className=""></div>
+              {isAuthenticated ? (
+                <div className="">
+                  <button onClick={() => navigate("/dashboard")} className="">
+                    Go to Dashboard
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <Link to={"/login"} className="">
+                    Login
+                  </Link>
+                  <Link to={"/signup"} className="">
+                    Sign Up
+                  </Link>
+                </>
+              )}
+            </div>
+          </div>
+        )}
       </header>
     </div>
   );
