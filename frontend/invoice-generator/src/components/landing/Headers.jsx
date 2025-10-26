@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { FileText, Menu, X } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import ProfileDropdown from "../layout/ProfileDropdown";
+import Button from "../ui/Button";
 const Headers = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -118,19 +119,28 @@ const Headers = () => {
               <a href="#faq" className="">
                 FAQs
               </a>
-              <div className=""></div>
+              <div className="border-t border-gray-200 my-2"></div>
               {isAuthenticated ? (
-                <div className="">
-                  <button onClick={() => navigate("/dashboard")} className="">
+                <div className="p-4">
+                  <Button
+                    onClick={() => navigate("/dashboard")}
+                    className="w-full"
+                  >
                     Go to Dashboard
-                  </button>
+                  </Button>
                 </div>
               ) : (
                 <>
-                  <Link to={"/login"} className="">
+                  <Link
+                    to={"/login"}
+                    className="block px-4 py-3 text-gray-600 hover:text-gray-50 font-medium transition-colors duration-200"
+                  >
                     Login
                   </Link>
-                  <Link to={"/signup"} className="">
+                  <Link
+                    to={"/signup"}
+                    className="block w-full text-left bg-gray-900 hover:bg-gray-800 text-white px-3 py-3 rounded-lg font-medium transition-all duration-200"
+                  >
                     Sign Up
                   </Link>
                 </>
