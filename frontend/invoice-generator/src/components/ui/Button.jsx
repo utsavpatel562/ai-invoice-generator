@@ -1,3 +1,5 @@
+import { Loader } from "lucide-react";
+
 const Button = ({
   variant = "primary",
   size = "medium",
@@ -19,7 +21,22 @@ const Button = ({
     medium: "px-4 py-2 h-10 text-md",
     large: "px-6 py-3 h-12 text-base",
   };
-  return <div>Button</div>;
+  return (
+    <button
+      className={`${baseClasses} ${variantClasses[variant]} ${sizeClasses[size]}`}
+      disabled={isLoading}
+      {...props}
+    >
+      {isLoading ? (
+        <Loader className="w-5 h-5 animate-spin" />
+      ) : (
+        <>
+          {Icon && <Icon className="w-4 h-4 mr-2" />}
+          {children}
+        </>
+      )}
+    </button>
+  );
 };
 
 export default Button;

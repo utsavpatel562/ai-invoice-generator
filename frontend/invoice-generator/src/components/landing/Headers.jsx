@@ -113,10 +113,16 @@ const Headers = () => {
               >
                 Features
               </a>
-              <a href="#testimonials" className="">
+              <a
+                href="#testimonials"
+                className="block px-4 py-3 text-gray-600 hover:text-gray-900 hover:bg-gray-50 font-medium transition-colors duration-200"
+              >
                 Testimonials
               </a>
-              <a href="#faq" className="">
+              <a
+                href="#faq"
+                className="block px-4 py-3 text-gray-600 hover:text-gray-900 hover:bg-gray-50 font-medium transition-colors duration-200"
+              >
                 FAQs
               </a>
               <div className="border-t border-gray-200 my-2"></div>
