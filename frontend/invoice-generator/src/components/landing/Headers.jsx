@@ -8,7 +8,7 @@ const Headers = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  const isAuthenticated = true;
+  const isAuthenticated = false;
   const user = { name: "Utsav", email: "utsav@gmail.com" };
   const logout = () => {};
 
