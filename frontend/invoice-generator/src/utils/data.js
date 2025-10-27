@@ -43,3 +43,30 @@ export const TESTIMONIALS = [
         avatar: "https://placehold.co/100x100/000000/ffffff?text=PJ"
     },
 ]
+export const FAQS = [
+  {
+    question: "What is an AI-powered invoice generator?",
+    answer:
+      "Our AI-powered invoice generator lets you create professional invoices instantly from plain text, emails, or receipts saving time and reducing manual errors.",
+  },
+  {
+    question: "Can I edit invoices after they are generated?",
+    answer:
+      "Yes, you can fully edit any AI-generated invoice before sending or exporting it. You have complete control over every detail.",
+  },
+  {
+    question: "How does the smart reminder system work?",
+    answer:
+      "Our AI automatically detects overdue payments and generates polite, effective reminder emails to help you maintain healthy cash flow.",
+  },
+  {
+    question: "Is my financial data secure?",
+    answer:
+      "Absolutely. We use advanced encryption and secure data handling practices to ensure your business and client information is always protected.",
+  },
+  {
+    question: "Can I track payments and insights in real time?",
+    answer:
+      "Yes, the AI-powered dashboard gives you real-time insights into your transactions, payments, and business performance all in one place.",
+  },
+];
