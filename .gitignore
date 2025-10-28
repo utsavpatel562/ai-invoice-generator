@@ -1,4 +1,4 @@
-# Ignore all environment files
+# Ignore all .env files
 **/.env
 
 # Common ignores
