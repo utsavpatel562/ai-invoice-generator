@@ -1,0 +1,7 @@
+# Ignore all environment files
+**/.env
+
+# Common ignores
+node_modules/
+dist/
+build/
