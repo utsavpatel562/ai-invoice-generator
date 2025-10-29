@@ -1,3 +1,4 @@
+// authController.js
 const jwt = require("jsonwebtoken");
 const User = require("../modules/User");
 
@@ -46,6 +47,21 @@ exports.registerUser = async(req, res) => {
 exports.loginUser = async(req, res) => {
     const {email, password} = req.body;
     try {
+        const user = await User.findOne({email}).select("+password");
+        if(user && (await user.matchPassword(password))) {
+            res.json({
+                _id: user._id,
+                name: user.name,
+                email: user.email,
+                token: generateToken(user._id),
+
+                businessName: user.businessName || "",
+                address: user.address || "",
+                phone: user.phone || "",
+            })
+        } else {
+            res.status(401).json({message: "Invalid Credientials"});
+        }
     } catch (error) {
         res.status(500).json({message: "Server error"});
     } 
