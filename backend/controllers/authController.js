@@ -72,6 +72,16 @@ exports.loginUser = async(req, res) => {
 // @access  Private
 exports.getMe = async(req, res) => {
     try {
+        const user = await User.findOne(req.user.id);
+        res.json({
+            _name: user._id,
+            name: user.name,
+            email: user.email,
+
+            businessName: user.businessName || "",
+            address: user.address || "",
+            phone: user.phone || "",
+        });
     } catch (error) {
         res.status(500).json({message: "Server error"});
     } 
@@ -82,6 +92,26 @@ exports.getMe = async(req, res) => {
 // @access  Private
 exports.updateUserProfile = async(req, res) => {
     try {
+        const user = await User.findOne(req.user.id);
+        if(user) {
+            user.name = req.body.name || user.name;
+            user.businessName = req.body.businessName || user.businessName;
+            user.address = req.body.address || user.address;
+            user.phone = req.body.phone || user.phone;
+
+            const updatedUser = await user.save();
+
+            res.json({
+                _id: updatedUser._id,
+                name: updatedUser.name,
+                email: updatedUser.email,
+                businessName: updatedUser.businessName,
+                address: updatedUser.address,
+                phone: updatedUser.phone,
+            });
+        } else {
+            res.status(404).json({message: "User not found"})
+        }
     } catch (error) {
         res.status(500).json({message: "Server error"});
     } 
