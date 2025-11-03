@@ -52,7 +52,31 @@ const parseInvoiceFromText = async(req, res) => {
     }
 }
 const generateReminderEmail = async(req, res) => {
-try {
+    const {invoiceId} = req.body;
+    if(!invoiceId) {
+        return res.status(400).json({message: "Invoice ID is required"});
+    }
+    try {
+        const invoice = await Invoice.findById(invoiceId);
+        if(!invoice) {
+            return res.status(400).json({message: "Invoice not found"});
+        }
+        const prompt = `
+        You are professional and polite accounting assistant. Write a friendly reminder to client about an overdue or upcoming invoice payment.
+        
+        Use the following details to personalize the email:
+        - Client Name: ${invoice.billTo.clientName}
+        - Invoice Number: ${invoice.invoiceNumber}
+        - Amount Due: ${invoice.total.toFixed(2)}
+        - Due Date: ${new Date(invoice.dueDate).toLocaleDateString()}
+
+        The tone should be friendly but clear. Keep it concise. Start the email with "Subject:".
+        `;
+         const response = await ai.models.generateContent({
+            model: "gemini-1.5-flash-latest",
+            contents: prompt,
+        });
+        res.status(200).json({reminderText: response.text});
 
     } catch (error) {
         console.error("Error reminder email with AI:", error);
@@ -61,7 +85,16 @@ try {
 };
 
 const getDashboardSummary = async(req, res) => {
-try {
+    try {
+        const invoices = await Invoice.find({user: req.user.id});
+        if(invoices.length === 0) {
+            return res.status(200).json({insights: ["No invoice data available to generate insights."]});
+        }
+        // Process and summarize data
+        const totalInvoice = invoices.length;
+        const paidInvoice = invoices.filter(inv => inv.status === "Paid");
+        const unpaidInvoice = invoices.filter(inv => inv.status !== "Paid");
+        const totalRevenue = paidInvoice.reduce((acc, inv)=> acc + inv.total, 0);
 
     } catch (error) {
         console.error("Error in generating dashboard summary with AI:", error);
