@@ -96,6 +96,15 @@ const getDashboardSummary = async(req, res) => {
         const unpaidInvoice = invoices.filter(inv => inv.status !== "Paid");
         const totalRevenue = paidInvoice.reduce((acc, inv)=> acc + inv.total, 0);
 
+        const prompt = `
+        - Total number of invoices: ${totalInvoice}
+        - Total paid invoices: ${paidInvoice.length}
+        - Total unpaid/pending invoices: ${unpaidInvoice.length}
+        - Total revenue from paid invoices: ${totalInvoice.toFixed(2)}
+        - Total outstanding amount from unpaid/pending invoices: ${totalOutstanding.toFixed(2)}
+        - Recent invoices (last 5): ${invoices.slice(0,5).map(inv=>`Invoice #${inv.invoiceNumber} for ${inv.total.toFixed(2)} with status ${inv.status}`).join(', ')}
+        `;
+
     } catch (error) {
         console.error("Error in generating dashboard summary with AI:", error);
         res.status(500).json({message: "Failed to parse invoice data from text.", details: error.message});
