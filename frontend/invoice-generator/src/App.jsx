@@ -14,11 +14,12 @@ import InvoiceDetails from "./pages/Invoices/InvoiceDetails";
 import CreateInvoice from "./pages/Invoices/CreateInvoice";
 import AllInvoices from "./pages/Invoices/AllInvoices";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
+import { AuthProvider } from "./context/AuthContext";
 
 const App = () => {
   return (
     <>
-      <div>
+      <AuthProvider>
         <Router>
           <Routes>
             {/* Public Routes */}
@@ -47,7 +48,7 @@ const App = () => {
             },
           }}
         />
-      </div>
+      </AuthProvider>
     </>
   );
 };
