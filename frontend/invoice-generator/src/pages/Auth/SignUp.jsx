@@ -48,7 +48,7 @@ const SignUp = () => {
   const validateName = (name) => {
     if (!name) return "Name is required";
     if (name.length < 2) return "Name must be at least 2 characters";
-    if (name.length < 50) return "Name must be less than 50 characters";
+    if (name.length > 50) return "Name must be less than 50 characters";
     return "";
   };
 
@@ -163,6 +163,33 @@ const SignUp = () => {
     setSuccess("");
 
     try {
+      const response = await axiosInstance.post(API_PATHS.AUTH.REGISTER, {
+        name: formData.name,
+        email: formData.email,
+        password: formData.password,
+      });
+      const data = response.data;
+      const { token, user } = data;
+      if (response.status === 201) {
+        setSuccess("Register Successful");
+
+        // Reset Form
+        setFormData({
+          name: "",
+          email: "",
+          password: "",
+          confirmPassword: "",
+        });
+        setTouched({
+          name: false,
+          email: false,
+          password: false,
+          confirmPassword: false,
+        });
+        // Login the user immediately after successful registration
+        login(user, token);
+        navigate("/dashboard");
+      }
     } catch (err) {
       if (err.response && err.response.data && err.response.data.message) {
         setError(err.response.data.message);
