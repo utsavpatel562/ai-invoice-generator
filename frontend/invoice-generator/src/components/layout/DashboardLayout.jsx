@@ -1,3 +1,4 @@
+// DashboardLayout
 import { Briefcase, LogOut, Menu, X } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import ProfileDropdown from "./ProfileDropdown";
