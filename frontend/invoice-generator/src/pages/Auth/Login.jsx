@@ -99,6 +99,7 @@ const Login = () => {
     try {
       const response = await axiosInstance.post(API_PATHS.AUTH.LOGIN, formData);
       if (response.status === 200) {
+        const token = response.data.token;
         if (token) {
           setSuccess("Login Successful");
           login(response.data, token);
