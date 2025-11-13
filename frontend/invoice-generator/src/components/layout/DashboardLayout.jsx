@@ -53,7 +53,7 @@ const DashboardLayout = ({ children, activeMenu }) => {
 
   return (
     <>
-      <div className="">
+      <div className="flex h-screen bg-gray-50">
         <div
           className={`fixed inset-y-0 left-0 z-50 transition-transform duration-300 transform ${
             isMobile
@@ -66,23 +66,76 @@ const DashboardLayout = ({ children, activeMenu }) => {
           } bg-white border-r border-gray-200`}
         >
           {/*Logo*/}
-          <div className="">
-            <Link to={"/dashboard"} className="">
-              <div className="">
-                <Briefcase className="" />
+          <div className="flex items-center h-16 border-b border-gray-200 px-6">
+            <Link to={"/dashboard"} className="flex items-center space-x-3">
+              <div className="w-8 h-8 bg-linear-to-br from-orange-500 to-orange-400 rounded-lg flex items-center justify-center">
+                <Briefcase className="h-5 w-5 text-white" />
               </div>
-              {!sidebarCollapsed && <span className="">AI Invoice App</span>}
+              {!sidebarCollapsed && (
+                <span className="text-gray-900 font-bold text-xl">
+                  AI Invoice App
+                </span>
+              )}
             </Link>
           </div>
           {/*Navigation*/}
-          <nav className=""></nav>
+          <nav className="p-4 space-y-2"></nav>
           {/*Logout*/}
-          <div className="">
-            <button className="" onClick={logout}>
-              <LogOut className="" />
-              {sidebarCollapsed && <span className="">Logout</span>}
+          <div className="absolute bottom-4 left-4 right-4">
+            <button
+              className="cursor-pointer w-full flex items-center px-3 py-2.5 text-sm font-medium rounded-lg text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-all duration-200"
+              onClick={logout}
+            >
+              <LogOut className="h-5 w-5 shrink-0 text-gray-500" />
+              {!sidebarCollapsed && (
+                <span className="ml-3 font-semibold">Logout</span>
+              )}
             </button>
           </div>
+        </div>
+        {/*Mobile*/}
+        {isMobile && sidebarOpen && (
+          <div
+            className="flex inset-0 bg-black/10 bg-opacity-25 z-40 backdrop-blur-sm"
+            onClick={() => setSidebarOpen(false)}
+          />
+        )}
+        {/*Main content*/}
+        <div
+          className={`flex-1 flex flex-col transition-all duration-300 ${
+            isMobile ? "ml-0" : sidebarCollapsed ? "ml-16" : "ml-64"
+          }`}
+        >
+          {/*Top nav*/}
+          <header className="bg-white/80 backdrop-blur-sm border-b border-gray-200 h-16 flex items-center justify-between px-6 sticky top-0 z-30">
+            <div className="flex items-center space-x-4">
+              {isMobile && (
+                <button
+                  onClick={toggleSidebar}
+                  className="p-2 rounded-xl hover:bg-gray-100 transition-colors duration-200"
+                >
+                  {sidebarOpen ? (
+                    <X className="h-5 w-5 text-gray-600" />
+                  ) : (
+                    <Menu className="h-5 w-5 text-gray-600" />
+                  )}
+                </button>
+              )}
+              <div className="">
+                <h1 className="text-base font-semibold text-gray-900">
+                  Welcome back, {user?.name}!
+                </h1>
+                <p className="text-sm text-gray-500 hidden sm:block">
+                  Here's your invoice overview.
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center space-x-3">
+              {/*Profile Dropdown*/}
+            </div>
+          </header>
+          {/*Main content here*/}
+          <main className="flex-1 overflow-auto p-6">{children}</main>
         </div>
       </div>
     </>
