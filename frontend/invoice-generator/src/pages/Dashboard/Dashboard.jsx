@@ -81,7 +81,128 @@ const Dashboard = () => {
     );
   }
 
-  return <div>Dashboard</div>;
+  return (
+    <>
+      <div className="space-y-8 pb-96">
+        <div className="">
+          <h2 className="text-xl font-semibold text-slate-900">Dashboard</h2>
+          <p className="text-sm text-slate-600 mt-1">
+            A quick overview of your bussiness finances.
+          </p>
+        </div>
+        {/*Stats Cards*/}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {statsData.map((stats, index) => (
+            <div
+              className="bg-white p-4 rounded-xl border border-slate-200 shadow-lg shadow-gray-100"
+              key={index}
+            >
+              <div className="flex items-center">
+                <div
+                  className={`shrink-0 w-12 h-12 ${
+                    colorClasses[stats.color].bg
+                  } rounded-lg flex items-center justify-center`}
+                >
+                  <stats.icon
+                    className={`w-6 h-6 ${colorClasses[stats.color].text}`}
+                  />
+                </div>
+                <div className="ml-4 min-w-0">
+                  <div className="text-sm font-medium text-slate-500 truncate">
+                    {stats.label}
+                  </div>
+                  <div className="text-2xl font-bold text-slate-900 wrap-break-word">
+                    {stats.value}
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* ai-insights card */}
+
+        {/* recent invoices */}
+        <div className="">
+          <div className="">
+            <div className="">
+              <h3 className="">Recent Invoices</h3>
+              <Button
+                className=""
+                variant={"ghost"}
+                onClick={() => navigate("/invoices")}
+              >
+                View All
+              </Button>
+            </div>
+            {recentInvoices.length > 0 ? (
+              <div className="">
+                <table className="">
+                  <thead className="">
+                    <tr className="">
+                      <th className="">Client</th>
+                      <th className="">Amount</th>
+                      <th className="">Status</th>
+                      <th className="">Due Date</th>
+                    </tr>
+                  </thead>
+                  <tbody className="">
+                    {recentInvoices.map((invoices) => (
+                      <tr
+                        className=""
+                        key={invoices._id}
+                        onClick={() => navigate(`/invoices/${invoices._id}`)}
+                      >
+                        <td className="">
+                          <div className="">{invoices.billTo.clientName}</div>
+                          <div className="">#{invoices.invoiceNumber}</div>
+                        </td>
+                        <td className="">${invoices.total.toFixed(2)}</td>
+                        <td className="">
+                          <span
+                            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                              invoices.status === "Paid"
+                                ? "bg-emerald-100 text-emerald-800"
+                                : invoices.status === "Pending"
+                                ? "bg-amber-100 text-amber-800"
+                                : "bg-red-100 text-red-800"
+                            }`}
+                          >
+                            {invoices.status}
+                          </span>
+                        </td>
+                        <td className="">
+                          {moment(invoices.dueDate).format("MMM D, YYYY")}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <div className="">
+                <div className="">
+                  <FileText className="" />
+                </div>
+                <h2 className="">No invoices yet</h2>
+                <p className="">
+                  You haven't created any invoices yet. Get started by creating
+                  your first one.
+                </p>
+                <Button
+                  className=""
+                  onClick={() => navigate("/invoices/new")}
+                  icon={Plus}
+                >
+                  Create Invoice
+                </Button>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </>
+  );
 };
 
 export default Dashboard;
