@@ -1,4 +1,4 @@
-import { Briefcase, LogOut, Menu, X } from "lucide-react";
+import { Briefcase, FileText, LogOut, Menu, X } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import ProfileDropdown from "./ProfileDropdown";
 import { Link, useNavigate } from "react-router-dom";
@@ -93,11 +93,11 @@ const DashboardLayout = ({ children, activeMenu }) => {
           <div className="flex items-center h-16 border-b border-gray-200 px-6">
             <Link to={"/dashboard"} className="flex items-center space-x-3">
               <div className="w-8 h-8 bg-linear-to-br from-orange-500 to-orange-400 rounded-lg flex items-center justify-center">
-                <Briefcase className="h-5 w-5 text-white" />
+                <FileText className="h-5 w-5 text-white" />
               </div>
               {!sidebarCollapsed && (
                 <span className="text-gray-900 font-bold text-xl">
-                  AI Invoice App
+                  invoiceiq.com
                 </span>
               )}
             </Link>
@@ -130,7 +130,7 @@ const DashboardLayout = ({ children, activeMenu }) => {
         {/*Mobile*/}
         {isMobile && sidebarOpen && (
           <div
-            className="flex inset-0 bg-black/10 bg-opacity-25 z-40 backdrop-blur-sm"
+            className="fixed inset-0 bg-black/30 z-40 backdrop-blur-sm"
             onClick={() => setSidebarOpen(false)}
           />
         )}
@@ -166,6 +166,17 @@ const DashboardLayout = ({ children, activeMenu }) => {
             </div>
             <div className="flex items-center space-x-3">
               {/*Profile Dropdown*/}
+              <ProfileDropdown
+                isOpen={profileDropdownOpen}
+                onToggle={(e) => {
+                  e.stopPropagation();
+                  setProfileDropdownOpen(!profileDropdownOpen);
+                }}
+                avatar={user?.avatar || ""}
+                companyName={user?.name || ""}
+                email={user?.email || ""}
+                onLogout={logout}
+              />
             </div>
           </header>
           {/*Main content here*/}

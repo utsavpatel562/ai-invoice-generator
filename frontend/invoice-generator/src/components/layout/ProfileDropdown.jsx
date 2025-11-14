@@ -14,7 +14,7 @@ const ProfileDropdown = ({
     <>
       <div className="relative">
         <button
-          className="flex items-center space-x-3 p-2 rounded-xl hover:bg-gray-50 transition-colors duration-200"
+          className="cursor-pointer flex items-center space-x-3 p-2 rounded-xl hover:bg-gray-50 transition-colors duration-200"
           onClick={onToggle}
         >
           {avatar ? (
