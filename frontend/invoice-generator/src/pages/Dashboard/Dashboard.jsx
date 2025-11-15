@@ -5,6 +5,7 @@ import moment from "moment";
 import Button from "../../components/ui/Button";
 import axiosInstance from "../../utils/axiosInstance";
 import { useEffect, useState } from "react";
+import AIInsightsCard from "../../components/AIInsightsCard";
 
 const Dashboard = () => {
   const [stats, setStats] = useState({
@@ -83,7 +84,7 @@ const Dashboard = () => {
 
   return (
     <>
-      <div className="space-y-8 pb-96">
+      <div className="space-y-8">
         <div className="">
           <h2 className="text-xl font-semibold text-slate-900">Dashboard</h2>
           <p className="text-sm text-slate-600 mt-1">
@@ -121,84 +122,100 @@ const Dashboard = () => {
         </div>
 
         {/* ai-insights card */}
+        <AIInsightsCard />
 
         {/* recent invoices */}
-        <div className="">
-          <div className="">
-            <div className="">
-              <h3 className="">Recent Invoices</h3>
+        <div className="w-full bg-white border border-slate-200 rounded-lg shadow-sm shadow-gray-100 overflow-hidden">
+          <div className="px-4 sm:px-6 py-6 border-b border-slate-200 bg-slate-50 flex justify-between items-center">
+            <h3 className="text-lg font-semibold text-slate-900">
+              Recent Invoices
+            </h3>
+            <Button
+              className="cursor-pointer hover:text-orange-500"
+              onClick={() => navigate("/invoices")}
+            >
+              View All
+            </Button>
+          </div>
+          {recentInvoices.length > 0 ? (
+            <div className="w-[90vw] md:w-auto overflow-x-auto">
+              <table className="w-full min-w-[600px] divide-y divide-slate-200">
+                <thead className="bg-slate-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
+                      Client
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
+                      Amount
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
+                      Status
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
+                      Due Date
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-slate-200">
+                  {recentInvoices.map((invoices) => (
+                    <tr
+                      className="hover:bg-slate-50 cursor-pointer"
+                      key={invoices._id}
+                      onClick={() => navigate(`/invoices/${invoices._id}`)}
+                    >
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm font-medium text-slate-900">
+                          {invoices.billTo.clientName}
+                        </div>
+                        <div className="text-sm text-slate-500">
+                          #{invoices.invoiceNumber}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-800">
+                        ${invoices.total.toFixed(2)}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span
+                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                            invoices.status === "Paid"
+                              ? "bg-emerald-100 text-emerald-800"
+                              : invoices.status === "Pending"
+                              ? "bg-amber-100 text-amber-800"
+                              : "bg-red-100 text-red-800"
+                          }`}
+                        >
+                          {invoices.status}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
+                        {moment(invoices.dueDate).format("MMM D, YYYY")}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center py-12 text-center">
+              <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mb-4">
+                <FileText className="w-8 h-8 text-slate-400" />
+              </div>
+              <h2 className="text-lg font-medium text-slate-900 mb-2">
+                No invoices yet
+              </h2>
+              <p className="text-slate-500 mb-6 md:max-w-md max-w-80">
+                You haven't created any invoices yet. Get started by creating
+                your first one.
+              </p>
               <Button
-                className=""
-                variant={"ghost"}
-                onClick={() => navigate("/invoices")}
+                className="flex items-center bg-orange-400 hover:bg-orange-500 text-slate-50 p-2 font-medium rounded-md cursor-pointer"
+                onClick={() => navigate("/invoices/new")}
+                icon={Plus}
               >
-                View All
+                Create Invoice
               </Button>
             </div>
-            {recentInvoices.length > 0 ? (
-              <div className="">
-                <table className="">
-                  <thead className="">
-                    <tr className="">
-                      <th className="">Client</th>
-                      <th className="">Amount</th>
-                      <th className="">Status</th>
-                      <th className="">Due Date</th>
-                    </tr>
-                  </thead>
-                  <tbody className="">
-                    {recentInvoices.map((invoices) => (
-                      <tr
-                        className=""
-                        key={invoices._id}
-                        onClick={() => navigate(`/invoices/${invoices._id}`)}
-                      >
-                        <td className="">
-                          <div className="">{invoices.billTo.clientName}</div>
-                          <div className="">#{invoices.invoiceNumber}</div>
-                        </td>
-                        <td className="">${invoices.total.toFixed(2)}</td>
-                        <td className="">
-                          <span
-                            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                              invoices.status === "Paid"
-                                ? "bg-emerald-100 text-emerald-800"
-                                : invoices.status === "Pending"
-                                ? "bg-amber-100 text-amber-800"
-                                : "bg-red-100 text-red-800"
-                            }`}
-                          >
-                            {invoices.status}
-                          </span>
-                        </td>
-                        <td className="">
-                          {moment(invoices.dueDate).format("MMM D, YYYY")}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            ) : (
-              <div className="">
-                <div className="">
-                  <FileText className="" />
-                </div>
-                <h2 className="">No invoices yet</h2>
-                <p className="">
-                  You haven't created any invoices yet. Get started by creating
-                  your first one.
-                </p>
-                <Button
-                  className=""
-                  onClick={() => navigate("/invoices/new")}
-                  icon={Plus}
-                >
-                  Create Invoice
-                </Button>
-              </div>
-            )}
-          </div>
+          )}
         </div>
       </div>
     </>
