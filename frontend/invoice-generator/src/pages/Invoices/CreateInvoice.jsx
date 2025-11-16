@@ -88,7 +88,21 @@ const CreateInvoice = ({ existingInvoice, onSave }) => {
     }
   }, [existingInvoice]);
 
-  const handleInputChange = (e, section, index) => {};
+  const handleInputChange = (e, section, index) => {
+    const { name, value } = e.target;
+    if (section) {
+      setFormData((prev) => ({
+        ...prev,
+        [section]: { ...prev[section], [name]: value },
+      }));
+    } else if (index !== undefined) {
+      const newItems = [...formData.items];
+      newItems[index] = { ...newItems[index], [name]: value };
+      setFormData((prev) => ({ ...prev, items: newItems }));
+    } else {
+      setFormData((prev) => ({ ...prev, [name]: value }));
+    }
+  };
 
   const handleAddItem = () => {
     setFormData({
@@ -100,7 +114,10 @@ const CreateInvoice = ({ existingInvoice, onSave }) => {
     });
   };
 
-  const handleRemoveItem = () => {};
+  const handleRemoveItem = (index) => {
+    const newItems = formData.items.filter((_, i) => i !== index);
+    setFormData({ ...formData, items: newItems });
+  };
 
   const { subtotal, taxTotal, total } = (() => {
     let subtotal = 0,
@@ -116,6 +133,51 @@ const CreateInvoice = ({ existingInvoice, onSave }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+
+    // Calculate correct item totals
+    const itemsWithTotal = formData.items.map((item) => {
+      const base = (item.quantity || 0) * (item.unitPrice || 0);
+      const tax = base * ((item.taxPercent || 0) / 100);
+      return { ...item, total: base + tax };
+    });
+
+    // Recalculate summary totals
+    const subtotal = itemsWithTotal.reduce(
+      (acc, item) => acc + (item.quantity || 0) * (item.unitPrice || 0),
+      0
+    );
+    const taxTotal = itemsWithTotal.reduce(
+      (acc, item) =>
+        acc +
+        (item.quantity || 0) *
+          (item.unitPrice || 0) *
+          ((item.taxPercent || 0) / 100),
+      0
+    );
+    const total = subtotal + taxTotal;
+
+    const finalFormData = {
+      ...formData,
+      items: itemsWithTotal,
+      subtotal,
+      taxTotal,
+      total,
+    };
+
+    try {
+      if (onSave) {
+        await onSave(finalFormData);
+      } else {
+        await axiosInstance.post(API_PATHS.INVOICE.CREATE, finalFormData);
+        toast.success("Invoice created successfully!");
+        navigate("/invoices");
+      }
+    } catch (error) {
+      toast.error("Failed to create invoice");
+      console.error(error);
+    }
+
+    setLoading(false);
   };
 
   return (
@@ -245,6 +307,7 @@ const CreateInvoice = ({ existingInvoice, onSave }) => {
                 <tr key={index} className="hover:bg-slate-50">
                   <td className="px-2 sm:px-6 py-4">
                     <input
+                      autoComplete="off"
                       type="text"
                       name="name"
                       value={item.name}
@@ -255,6 +318,7 @@ const CreateInvoice = ({ existingInvoice, onSave }) => {
                   </td>
                   <td className="px-2 sm:px-6 py-4">
                     <input
+                      autoComplete="off"
                       type="number"
                       name="quantity"
                       value={item.quantity}
@@ -265,6 +329,7 @@ const CreateInvoice = ({ existingInvoice, onSave }) => {
                   </td>
                   <td className="px-2 sm:px-6 py-4">
                     <input
+                      autoComplete="off"
                       type="number"
                       name="unitPrice"
                       value={item.unitPrice}
@@ -275,6 +340,7 @@ const CreateInvoice = ({ existingInvoice, onSave }) => {
                   </td>
                   <td className="px-2 sm:px-6 py-4">
                     <input
+                      autoComplete="off"
                       type="number"
                       name="taxPercent"
                       value={item.taxPercent}
