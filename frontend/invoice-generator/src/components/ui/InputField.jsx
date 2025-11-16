@@ -25,3 +25,4 @@ const InputField = ({ icon: Icon, label, name, ...props }) => {
     </div>
   );
 };
+export default InputField;
