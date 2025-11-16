@@ -14,6 +14,7 @@ const InputField = ({ icon: Icon, label, name, ...props }) => {
           </div>
         )}
         <input
+          autoComplete="off"
           id={name}
           name={name}
           {...props}

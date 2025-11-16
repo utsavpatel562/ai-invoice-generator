@@ -128,8 +128,8 @@ const CreateInvoice = ({ existingInvoice, onSave }) => {
           {existingInvoice ? "Save Changes" : "Save Invoice"}
         </Button>
       </div>
-      <div className="">
-        <div className="">
+      <div className="bg-white p-6 rounded-lg shadow-sm shadow-gray-100 border border-slate-200">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <InputField
             label="Invoice Number"
             name="invoiceNumber"
@@ -154,9 +154,11 @@ const CreateInvoice = ({ existingInvoice, onSave }) => {
           />
         </div>
       </div>
-      <div className="">
-        <div className="">
-          <h3 className="">Bill Form</h3>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="bg-white p-6 rounded-lg shadow-sm shadow-gray-100 border border-slate-200 space-y-4">
+          <h3 className="text-lg font-semibold text-slate-900 mb-2">
+            Bill Form
+          </h3>
           <InputField
             label="Business Name"
             name="businessName"
@@ -183,34 +185,171 @@ const CreateInvoice = ({ existingInvoice, onSave }) => {
             onChange={(e) => handleInputChange(e, "billFrom")}
           />
         </div>
-        <div className="">
-          <div className="">
-            <h3 className="">Bill To</h3>
-            <InputField
-              label="Client Name"
-              name="clientName"
-              value={formData.billTo.clientName}
-              onChange={(e) => handleInputChange(e, "billTo")}
-            />
-            <InputField
-              label="Client Email"
-              type="email"
-              name="email"
-              value={formData.billTo.email}
-              onChange={(e) => handleInputChange(e, "billTo")}
-            />
-            <TextareaField
-              label="Client Address"
-              name="address"
-              value={formData.billTo.address}
-              onChange={(e) => handleInputChange(e, "billTo")}
-            />
-            <InputField
-              label="Client Phone"
-              name="phone"
-              value={formData.billTo.phone}
-              onChange={(e) => handleInputChange(e, "billTo")}
-            />
+        <div className="bg-white p-6 rounded-lg shadow-sm shadow-gray-100 border border-slate-200 space-y-4">
+          <h3 className="text-lg font-semibold text-slate-900 mb-2">Bill To</h3>
+          <InputField
+            label="Client Name"
+            name="clientName"
+            value={formData.billTo.clientName}
+            onChange={(e) => handleInputChange(e, "billTo")}
+          />
+          <InputField
+            label="Client Email"
+            type="email"
+            name="email"
+            value={formData.billTo.email}
+            onChange={(e) => handleInputChange(e, "billTo")}
+          />
+          <TextareaField
+            label="Client Address"
+            name="address"
+            value={formData.billTo.address}
+            onChange={(e) => handleInputChange(e, "billTo")}
+          />
+          <InputField
+            label="Client Phone"
+            name="phone"
+            value={formData.billTo.phone}
+            onChange={(e) => handleInputChange(e, "billTo")}
+          />
+        </div>
+      </div>
+      <div className="bg-white rounded-lg shadow-sm shadow-gray-100 border border-slate-200 overflow-hidden">
+        <div className="p-4 sm:p-6 border-b border-slate-200 bg-slate-50">
+          <h3 className="text-lg font-semibold text-slate-900">Items</h3>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full divide-y divide-slate-200">
+            <thead className="bg-slate-50">
+              <tr>
+                <th className="px-2 sm:px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
+                  Item
+                </th>
+                <th className="px-2 sm:px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
+                  Qty
+                </th>
+                <th className="px-2 sm:px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
+                  Price
+                </th>
+                <th className="px-2 sm:px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
+                  Tax (%)
+                </th>
+                <th className="px-2 sm:px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
+                  Total
+                </th>
+                <th className="px-2 sm:px-6 py-3"></th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-slate-200">
+              {formData.items.map((item, index) => (
+                <tr key={index} className="hover:bg-slate-50">
+                  <td className="px-2 sm:px-6 py-4">
+                    <input
+                      type="text"
+                      name="name"
+                      value={item.name}
+                      onChange={(e) => handleInputChange(e, null, index)}
+                      className="w-full h-10 px-3 py-2 border border-slate-200 rounded-lg bg-white text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                      placeholder="Item name"
+                    />
+                  </td>
+                  <td className="px-2 sm:px-6 py-4">
+                    <input
+                      type="number"
+                      name="quantity"
+                      value={item.quantity}
+                      onChange={(e) => handleInputChange(e, null, index)}
+                      className="w-full h-10 px-3 py-2 border border-slate-200 rounded-lg bg-white text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                      placeholder="1"
+                    />
+                  </td>
+                  <td className="px-2 sm:px-6 py-4">
+                    <input
+                      type="number"
+                      name="unitPrice"
+                      value={item.unitPrice}
+                      onChange={(e) => handleInputChange(e, null, index)}
+                      className="w-full h-10 px-3 py-2 border border-slate-200 rounded-lg bg-white text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                      placeholder="0.00"
+                    />
+                  </td>
+                  <td className="px-2 sm:px-6 py-4">
+                    <input
+                      type="number"
+                      name="taxPercent"
+                      value={item.taxPercent}
+                      onChange={(e) => handleInputChange(e, null, index)}
+                      className="w-full h-10 px-3 py-2 border border-slate-200 rounded-lg bg-white text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                      placeholder="0"
+                    />
+                  </td>
+                  <td className="px-2 sm:px-6 py-4 text-sm text-slate-500">
+                    $
+                    {(
+                      (item.quantity || 0) *
+                      (item.unitPrice || 0) *
+                      (1 + (item.taxPercent || 0) / 100)
+                    ).toFixed(2)}
+                  </td>
+                  <td className="px-2 sm:px-6 py-4">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="small"
+                      onClick={() => handleRemoveItem(index)}
+                    >
+                      <Trash2 className="w-4 h-4 text-red-500" />
+                    </Button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <div className="p-4 sm:p-6 border-t border-slate-200">
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={handleAddItem}
+            icon={Plus}
+          >
+            Add Item
+          </Button>
+        </div>
+      </div>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="bg-white p-6 rounded-lg shadow-sm shadow-gray-100 border border-slate-200 space-y-4">
+          <h3 className="text-lg font-semibold text-slate-900 mb-2">
+            Notes & Terms
+          </h3>
+          <TextareaField
+            label="Notes"
+            name="notes"
+            value={formData.notes}
+            onChange={handleInputChange}
+          />
+          <SelectField
+            label="Payment Terms"
+            name="paymentTerms"
+            value={formData.paymentTerms}
+            onChange={handleInputChange}
+            options={["Net 15", "Net 30", "Net 60", "Due on receipt"]}
+          />
+        </div>
+        <div className="bg-white p-6 rounded-lg shadow-sm shadow-gray-100 border border-slate-200 flex flex-col justify-center">
+          <div className="space-y-4">
+            <div className="flex justify-between text-sm text-slate-600">
+              <p>Subtotal:</p>
+              <p>${subtotal.toFixed(2)}</p>
+            </div>
+            <div className="flex justify-between text-sm text-slate-600">
+              <p>Tax:</p>
+              <p>${taxTotal.toFixed(2)}</p>
+            </div>
+            <div className="flex justify-between text-lg font-semibold text-slate-900 border-t border-slate-200 pt-4 mt-4">
+              <p>Total:</p>
+              <p>${total.toFixed(2)}</p>
+            </div>
           </div>
         </div>
       </div>

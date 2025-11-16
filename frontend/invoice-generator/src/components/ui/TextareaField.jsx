@@ -14,6 +14,7 @@ const TextareaField = ({ icon: Icon, label, name, ...props }) => {
           </div>
         )}
         <textarea
+          autoComplete="off"
           id={name}
           name={name}
           rows={3}
