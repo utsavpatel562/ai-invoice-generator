@@ -7,7 +7,7 @@ import moment from "moment";
 import { useAuth } from "../../context/AuthContext";
 import { useEffect, useState } from "react";
 
-const CreateInvoice = () => {
+const CreateInvoice = ({ existingInvoice, onSave }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
@@ -83,6 +83,36 @@ const CreateInvoice = () => {
       generateNewInvoiceNumber();
     }
   }, [existingInvoice]);
+
+  const handleInputChange = (e, section, index) => {};
+
+  const handleAddItem = () => {
+    setFormData({
+      ...formData,
+      items: [
+        ...formData.items,
+        { name: "", quantity: 1, unitPrice: 0, taxPercent: 0 },
+      ],
+    });
+  };
+
+  const handleRemoveItem = () => {};
+
+  const { subtotal, taxTotal, total } = (() => {
+    let subtotal = 0,
+      taxTotal = 0;
+    formData.items.forEach((item) => {
+      const itemTotal = (item.quantity || 0) * (item.unitPrice || 0);
+      subtotal += itemTotal;
+      taxTotal += itemTotal * ((item.taxPercent || 0) / 100);
+    });
+    return { subtotal, taxTotal, total: subtotal + taxTotal };
+  })();
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+  };
 
   return <div>CreateInvoice</div>;
 };
