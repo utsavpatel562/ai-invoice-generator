@@ -51,31 +51,35 @@ const AllInvoices = () => {
     fetchInvoices();
   }, []);
 
-  const handleDelete = async (id) => {};
+  const handleDelete = async (id) => {
+    if (window.confirm("Are you sure you want to delete this invoice?")) {
+      try {
+        await axiosInstance.delete(API_PATHS.INVOICE.DELETE_INVOICE(id));
+        setInvoices(invoices.filter((invoice) => invoice._id !== id));
+      } catch (err) {
+        console.error(err);
+      }
+    }
+  };
 
   // Update invoice status
-  const handleStatusChange = async (invoiceId, newStatus) => {
-    setStatusChangeLoading((prev) => ({ ...prev, [invoiceId]: true }));
-
+  const handleStatusChange = async (invoice) => {
+    setStatusChangeLoading(invoice._id);
     try {
+      const newStatus = invoice.status === "Paid" ? "Unpaid" : "Paid";
+      const updatedInvoice = { ...invoice, status: newStatus };
       const response = await axiosInstance.put(
-        `/invoice/update-status/${invoiceId}`,
-        { status: newStatus }
+        API_PATHS.INVOICE.UPDATE_INVOICE(invoice._id),
+        updatedInvoice
       );
-
-      // Update invoice in UI
-      setInvoices((prev) =>
-        prev.map((inv) =>
-          inv._id === invoiceId ? { ...inv, status: newStatus } : inv
-        )
+      setInvoices(
+        invoices.map((inv) => (inv._id === invoice._id ? response.data : inv))
       );
-
-      toast.success("Status updated!");
-    } catch (error) {
-      console.error(error);
-      toast.error("Failed to update status");
+    } catch (err) {
+      setError("Failed to update invoice status.");
+      console.error(err);
     } finally {
-      setStatusChangeLoading((prev) => ({ ...prev, [invoiceId]: false }));
+      setStatusChangeLoading(null);
     }
   };
 

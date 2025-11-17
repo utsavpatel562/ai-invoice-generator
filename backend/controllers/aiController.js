@@ -118,35 +118,37 @@ const getDashboardSummary = async (req, res) => {
     const invoices = await Invoice.find({ user: req.user.id });
 
     if (invoices.length === 0) {
-      return res
-        .status(200)
-        .json({ insights: ["No invoice data available to generate insights."] });
+      return res.status(200).json({
+        insights: ["No invoice data available to generate insights."],
+      });
     }
 
-    // ----------------------------
-    // Monthly Revenue Trend
-    // ----------------------------
-    const monthRange = (date) => ({
-      start: moment(date).startOf("month").toDate(),
-      end: moment(date).endOf("month").toDate(),
-    });
+    // Normalize missing paidDate → use invoiceDate when status = Paid
+    const normalizedInvoices = invoices.map((inv) => ({
+      ...inv._doc,
+      paidDate: inv.paidDate || (inv.status === "Paid" ? inv.invoiceDate : null),
+      issueDate: inv.issueDate || inv.invoiceDate,
+    }));
 
-    const { start: thisStart, end: thisEnd } = monthRange(new Date());
-    const { start: lastStart, end: lastEnd } = monthRange(
-      moment().subtract(1, "month")
-    );
+    const now = moment();
+    const thisStart = now.clone().startOf("month").toDate();
+    const thisEnd = now.clone().endOf("month").toDate();
 
-    const paidInvoices = invoices.filter(
+    const lastStart = now.clone().subtract(1, "month").startOf("month").toDate();
+    const lastEnd = now.clone().subtract(1, "month").endOf("month").toDate();
+
+    const paidInvoices = normalizedInvoices.filter(
       (inv) => inv.status === "Paid" && inv.paidDate
     );
 
+    // ---- Monthly Revenue ----
     const thisMonthPaid = paidInvoices
       .filter((inv) => inv.paidDate >= thisStart && inv.paidDate <= thisEnd)
-      .reduce((sum, inv) => sum + (inv.total || 0), 0);
+      .reduce((sum, inv) => sum + inv.total, 0);
 
     const lastMonthPaid = paidInvoices
       .filter((inv) => inv.paidDate >= lastStart && inv.paidDate <= lastEnd)
-      .reduce((sum, inv) => sum + (inv.total || 0), 0);
+      .reduce((sum, inv) => sum + inv.total, 0);
 
     let trend =
       lastMonthPaid > 0
@@ -157,20 +159,18 @@ const getDashboardSummary = async (req, res) => {
 
     trend = Number(trend.toFixed(1));
 
-    // ----------------------------
-    // Slow Paying Clients
-    // ----------------------------
+    // ---- Slow Paying Clients ----
     const clientDelays = {};
 
     paidInvoices.forEach((inv) => {
-      const issueDate = moment(inv.issueDate);
-      const paidDate = moment(inv.paidDate);
-      const days = paidDate.diff(issueDate, "days");
+      const issue = moment(inv.issueDate);
+      const paid = moment(inv.paidDate);
+      const days = paid.diff(issue, "days");
 
       if (!clientDelays[inv.billTo?.clientName]) {
-        clientDelays[inv.billTo?.clientName] = [];
+        clientDelays[inv.billTo.clientName] = [];
       }
-      clientDelays[inv.billTo?.clientName].push(days);
+      clientDelays[inv.billTo.clientName].push(days);
     });
 
     const slowClients = Object.entries(clientDelays)
@@ -183,27 +183,19 @@ const getDashboardSummary = async (req, res) => {
       .sort((a, b) => b.avgDaysToPay - a.avgDaysToPay)
       .slice(0, 3);
 
-    // ----------------------------
-    // Collection Efficiency
-    // ----------------------------
-    const totalPaidAmount = paidInvoices.reduce(
-      (sum, inv) => sum + (inv.total || 0),
-      0
-    );
-
-    const totalInvoicedAmount = invoices.reduce(
-      (sum, inv) => sum + (inv.total || 0),
+    // ---- Collection Efficiency ----
+    const totalPaid = paidInvoices.reduce((x, inv) => x + inv.total, 0);
+    const totalInvoiced = normalizedInvoices.reduce(
+      (x, inv) => x + inv.total,
       0
     );
 
     const collectionEfficiency =
-      totalInvoicedAmount > 0
-        ? ((totalPaidAmount / totalInvoicedAmount) * 100).toFixed(1)
+      totalInvoiced > 0
+        ? Number(((totalPaid / totalInvoiced) * 100).toFixed(1))
         : 0;
 
-    // ----------------------------
-    // Final Response
-    // ----------------------------
+    // ---- Final Insights ----
     const insights = [
       `This month's collected revenue is $${thisMonthPaid.toFixed(
         2
@@ -222,7 +214,7 @@ const getDashboardSummary = async (req, res) => {
         trendPercent: trend,
       },
       slowPayingClients: slowClients,
-      collectionEfficiencyScore: Number(collectionEfficiency),
+      collectionEfficiencyScore: collectionEfficiency,
     });
   } catch (error) {
     console.error("Error in generating dashboard summary:", error);
@@ -232,6 +224,7 @@ const getDashboardSummary = async (req, res) => {
     });
   }
 };
+
 
 module.exports = {
   parseInvoiceFromText,

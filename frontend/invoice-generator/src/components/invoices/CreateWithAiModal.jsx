@@ -1,7 +1,67 @@
-import React from "react";
+import { Sparkles, X } from "lucide-react";
+import Button from "../ui/Button";
+import TextareaField from "../../components/ui/TextareaField";
+import axiosInstance from "../../utils/axiosInstance";
+import { API_PATHS } from "../../utils/apiPaths";
+import toast from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
+import { useState } from "react";
 
 const CreateWithAiModal = ({ isOpen, onClose }) => {
-  return <div>CreateWithAiModal</div>;
+  const [text, setText] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
+  const handleGenerate = async () => {};
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 overflow-y-auto">
+      <div className="flex items-center justify-center min-h-screen px-4 text-center">
+        <div
+          className="fixed inset-0 bg-black/60 bg-opacity-50 transition-opacity"
+          onClick={onClose}
+        ></div>
+        <div className="bg-white rounded-lg shadow-xl max-w-lg w-full p-6 relative text-left transform transition-all">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-semibold text-slate-900 flex items-center">
+              <Sparkles className="w-5 h-5 mr-2 text-orange-500" />
+              Create Invoice with AI
+            </h3>
+            <button
+              className="text-slate-400 hover:text-slate-600"
+              onClick={onClose}
+            >
+              <X className="w-5 h-5 cursor-pointer" />
+            </button>
+          </div>
+          <div className="space-y-4">
+            <p className="text-sm text-slate-600">
+              Paste any text that contains invoice details (like client name,
+              items, quantites, and price) and the AI will attempt to create an
+              invoice from it.
+            </p>
+            <TextareaField
+              name="invoiceText"
+              label="Paste Invoice Text Here"
+              value={text}
+              onChange={(e) => setText(e.target.value)}
+              placeholder="e.g., 'Invoice for ClientCrop: 2 Hours of software programming work at $80/hr and 13% tax'"
+              rows={8}
+            />
+          </div>
+          <div className="flex justify-end space-x-3 mt-6">
+            <Button variant="secondary" onClick={onClose}>
+              Cancel
+            </Button>
+            <Button onClick={handleGenerate} isLoading={isLoading}>
+              {isLoading ? "Generating..." : "Generating invoice"}
+            </Button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 };
 
 export default CreateWithAiModal;
