@@ -9,6 +9,7 @@ import {
   AlertCircle,
   Sparkles,
   Mail,
+  Edit,
 } from "lucide-react";
 import moment from "moment";
 import { useNavigate } from "react-router-dom";
@@ -26,6 +27,7 @@ const AllInvoices = () => {
   const [isAiModalOpen, setIsAiModalOpen] = useState(false);
   const [isReminderModalOpen, setIsReminderModalOpen] = useState(false);
   const [selectedInvoiceId, setSelectedInvoiceId] = useState(null);
+  const [statusChangeLoading, setStatusChangeLoading] = useState({});
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -51,7 +53,31 @@ const AllInvoices = () => {
 
   const handleDelete = async (id) => {};
 
-  const handleStatusChange = async (invoice) => {};
+  // Update invoice status
+  const handleStatusChange = async (invoiceId, newStatus) => {
+    setStatusChangeLoading((prev) => ({ ...prev, [invoiceId]: true }));
+
+    try {
+      const response = await axiosInstance.put(
+        `/invoice/update-status/${invoiceId}`,
+        { status: newStatus }
+      );
+
+      // Update invoice in UI
+      setInvoices((prev) =>
+        prev.map((inv) =>
+          inv._id === invoiceId ? { ...inv, status: newStatus } : inv
+        )
+      );
+
+      toast.success("Status updated!");
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to update status");
+    } finally {
+      setStatusChangeLoading((prev) => ({ ...prev, [invoiceId]: false }));
+    }
+  };
 
   const handleOpenReminderModal = (invoiceId) => {
     setSelectedInvoiceId(invoiceId);
@@ -75,9 +101,11 @@ const AllInvoices = () => {
   }, [invoices, searchTerm, statusFilter]);
 
   if (loading) {
-    <div className="flex justify-center h-8 animate-spin text-orange-500 itw-8">
-      <Loader2 className="" />
-    </div>;
+    return (
+      <div className="flex justify-center h-20 items-center">
+        <Loader2 className="w-8 h-8 animate-spin text-orange-500" />
+      </div>
+    );
   }
 
   return (
@@ -126,20 +154,167 @@ const AllInvoices = () => {
       )}
       <div className="bg-white border border-slate-200 rounded-lg shadow-sm">
         <div className="p-4 sm:p-6 border-b border-slate-200">
-          <div className="flex flex-col sm:flex-row gap-4">
-            <div className="relative grow">
-              <div className="absoulte inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+          <div className="flex flex-col sm:flex-row gap-4 sm:items-stretch">
+            {/* Search */}
+            <div className="relative w-full sm:grow">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                 <Search className="w-5 h-5 text-slate-400" />
               </div>
               <input
                 autoComplete="off"
                 type="text"
                 placeholder="Search by invoice # or client..."
-                className="w-full h-10 pl-10 pr-4 py-2 border border-slate-200 rounded-lg bg-white text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                className="w-full h-10 pl-10 pr-4 py-2 border border-slate-200 rounded-lg bg-white text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
               />
+            </div>
+
+            {/* Filter */}
+            <div className="w-full sm:w-auto">
+              <select
+                className="w-full sm:w-auto h-10 px-3 py-2 border border-slate-200 rounded-lg bg-white text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-200"
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+              >
+                <option value="All">All Statuses</option>
+                <option value="Paid">Paid</option>
+                <option value="Pending">Pending</option>
+                <option value="Unpaid">Unpaid</option>
+              </select>
             </div>
           </div>
         </div>
+        {filteredInvoices.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-12 text-center">
+            <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mb-4">
+              <FileText className="w-8 h-8 text-slate-400" />
+            </div>
+            <h3 className="text-lg font-medium text-slate-900 mb-2">
+              No invoice found
+            </h3>
+            <p className="text-slate-500 mb-6 max-w-md">
+              Your search or filter criteria did not match any invoices. Try
+              adjusting your search.
+            </p>
+            {invoices.length === 0 && (
+              <Button onClick={() => navigate("/invoices/new")} icon={Plus}>
+                Create First Invoice
+              </Button>
+            )}
+          </div>
+        ) : (
+          <div className="w-[90vw] md:w-auto overflow-x-auto">
+            <table className="min-w-full divide-y divide-slate-200">
+              <thead className="bg-slate-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
+                    Invoice #
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
+                    Client
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
+                    Amount
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
+                    Due Date
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
+                    Status
+                  </th>
+                  <th className="px-6 py-3 text-right text-xs font-medium text-slate-500 uppercase tracking-wider">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-slate-200">
+                {filteredInvoices.map((invoice) => (
+                  <tr key={invoice._id} className="hover:bg-slate-50">
+                    <td
+                      onClick={() => navigate(`/invoices/${invoice._id}`)}
+                      className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900 cursor-pointer"
+                    >
+                      {invoice.invoiceNumber}
+                    </td>
+                    <td
+                      onClick={() => navigate(`/invoices/${invoice._id}`)}
+                      className="px-6 py-4 whitespace-nowrap text-sm text-slate-600 cursor-pointer"
+                    >
+                      {invoice.billTo.clientName}
+                    </td>
+                    <td
+                      onClick={() => navigate(`/invoices/${invoice._id}`)}
+                      className="px-6 py-4 whitespace-nowrap text-sm text-slate-600 cursor-pointer"
+                    >
+                      ${invoice.total.toFixed(2)}
+                    </td>
+                    <td
+                      onClick={() => navigate(`/invoices/${invoice._id}`)}
+                      className="px-6 py-4 whitespace-nowrap text-sm text-slate-600 cursor-pointer"
+                    >
+                      {moment(invoice.dueDate).format("MMM D, YYYY")}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm">
+                      <span
+                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                          invoice.status === "Paid"
+                            ? "bg-emerald-100 text-emerald-800"
+                            : invoice.status === "Pending"
+                            ? "bg-amber-100 text-amber-800"
+                            : "bg-red-100 text-red-800"
+                        }`}
+                      >
+                        {invoice.status}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                      <div
+                        className="flex items-center justify-end gap-2"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <Button
+                          size="small"
+                          variant="secondary"
+                          onClick={() => handleStatusChange(invoice)}
+                          isLoading={statusChangeLoading === invoice._id}
+                        >
+                          {invoice.status === "Paid"
+                            ? "Mark Unpaid"
+                            : "Mark Paid"}
+                        </Button>
+                        <Button
+                          size="small"
+                          variant="ghost"
+                          onClick={() => navigate(`/invoices/${invoice._id}`)}
+                        >
+                          <Edit className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          size="small"
+                          variant="ghost"
+                          onClick={() => handleDelete(invoice._id)}
+                        >
+                          <Trash2 className="w-4 h-4 text-red-500" />
+                        </Button>
+                        {invoice.status !== "Paid" && (
+                          <Button
+                            size="small"
+                            variant="ghost"
+                            onClick={() => handleOpenReminderModal(invoice._id)}
+                            title="Generate Reminder"
+                          >
+                            <Mail className="w-4 h-4 text-orange-500" />
+                          </Button>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
     </div>
   );
