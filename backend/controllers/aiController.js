@@ -1,12 +1,18 @@
+const moment = require("moment");
 const { GoogleGenAI } = require("@google/genai");
 const Invoice = require("../modules/Invoice");
+
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
+// =====================
+// Parse Invoice From Raw Text
+// =====================
 const parseInvoiceFromText = async (req, res) => {
   const { text } = req.body;
   if (!text) {
     return res.status(400).json({ message: "Text is required" });
   }
+
   try {
     const prompt = `You are expert invoice data extraction AI. Analyze the following text and extract relevant information to create an invoice. 
 The output MUST be a valid JSON object.
@@ -32,11 +38,13 @@ ${text}
 
 Extract the data and provide only the JSON object.
 `;
+
     let response = await ai.models.generateContent({
       model: "gemini-1.5-flash-latest",
       contents: prompt,
     });
 
+    // Clean response
     let responseText = response.text;
     if (typeof responseText !== "string") {
       if (typeof response.text === "function") {
@@ -46,20 +54,30 @@ Extract the data and provide only the JSON object.
       }
     }
 
-    const cleanedJson = responseText.replace(/```json/g, "").replace(/```/g, "").trim();
+    const cleanedJson = responseText
+      .replace(/```json/g, "")
+      .replace(/```/g, "")
+      .trim();
+
     const parsedData = JSON.parse(cleanedJson);
     res.status(200).json(parsedData);
   } catch (error) {
     console.error("Error parsing invoice with AI:", error);
-    res.status(500).json({ message: "Failed to parse invoice data from text.", details: error.message });
+    res
+      .status(500)
+      .json({ message: "Failed to parse invoice data from text.", details: error.message });
   }
 };
 
+// =====================
+// Reminder Email
+// =====================
 const generateReminderEmail = async (req, res) => {
   const { invoiceId } = req.body;
   if (!invoiceId) {
     return res.status(400).json({ message: "Invoice ID is required" });
   }
+
   try {
     const invoice = await Invoice.findById(invoiceId);
     if (!invoice) {
@@ -86,43 +104,137 @@ The tone should be friendly but clear. Keep it concise. Start the email with "Su
     res.status(200).json({ reminderText: response.text });
   } catch (error) {
     console.error("Error reminder email with AI:", error);
-    res.status(500).json({ message: "Failed to generate reminder email.", details: error.message });
+    res
+      .status(500)
+      .json({ message: "Failed to generate reminder email.", details: error.message });
   }
 };
 
+// =====================
+// Dashboard Summary
+// =====================
 const getDashboardSummary = async (req, res) => {
   try {
     const invoices = await Invoice.find({ user: req.user.id });
+
     if (invoices.length === 0) {
-      return res.status(200).json({ insights: ["No invoice data available to generate insights."] });
+      return res
+        .status(200)
+        .json({ insights: ["No invoice data available to generate insights."] });
     }
 
-    const totalInvoice = invoices.length;
-    const paidInvoice = invoices.filter(inv => inv.status === "Paid");
-    const unpaidInvoice = invoices.filter(inv => inv.status !== "Paid");
-    const totalRevenue = paidInvoice.reduce((acc, inv) => acc + inv.total, 0);
-    const totalOutstanding = unpaidInvoice.reduce((acc, inv) => acc + (inv.total ?? 0), 0);
-
-    const recentInvoicesSummary = invoices.slice(-5).map(inv => {
-      const total = typeof inv.total === "number" ? inv.total : 0;
-      return `Invoice #${inv.invoiceNumber} for ${total.toFixed(2)} with status ${inv.status}`;
+    // ----------------------------
+    // Monthly Revenue Trend
+    // ----------------------------
+    const monthRange = (date) => ({
+      start: moment(date).startOf("month").toDate(),
+      end: moment(date).endOf("month").toDate(),
     });
 
+    const { start: thisStart, end: thisEnd } = monthRange(new Date());
+    const { start: lastStart, end: lastEnd } = monthRange(
+      moment().subtract(1, "month")
+    );
+
+    const paidInvoices = invoices.filter(
+      (inv) => inv.status === "Paid" && inv.paidDate
+    );
+
+    const thisMonthPaid = paidInvoices
+      .filter((inv) => inv.paidDate >= thisStart && inv.paidDate <= thisEnd)
+      .reduce((sum, inv) => sum + (inv.total || 0), 0);
+
+    const lastMonthPaid = paidInvoices
+      .filter((inv) => inv.paidDate >= lastStart && inv.paidDate <= lastEnd)
+      .reduce((sum, inv) => sum + (inv.total || 0), 0);
+
+    let trend =
+      lastMonthPaid > 0
+        ? ((thisMonthPaid - lastMonthPaid) / lastMonthPaid) * 100
+        : thisMonthPaid > 0
+        ? 100
+        : 0;
+
+    trend = Number(trend.toFixed(1));
+
+    // ----------------------------
+    // Slow Paying Clients
+    // ----------------------------
+    const clientDelays = {};
+
+    paidInvoices.forEach((inv) => {
+      const issueDate = moment(inv.issueDate);
+      const paidDate = moment(inv.paidDate);
+      const days = paidDate.diff(issueDate, "days");
+
+      if (!clientDelays[inv.billTo?.clientName]) {
+        clientDelays[inv.billTo?.clientName] = [];
+      }
+      clientDelays[inv.billTo?.clientName].push(days);
+    });
+
+    const slowClients = Object.entries(clientDelays)
+      .map(([client, delays]) => ({
+        client,
+        avgDaysToPay: (
+          delays.reduce((a, b) => a + b, 0) / delays.length
+        ).toFixed(1),
+      }))
+      .sort((a, b) => b.avgDaysToPay - a.avgDaysToPay)
+      .slice(0, 3);
+
+    // ----------------------------
+    // Collection Efficiency
+    // ----------------------------
+    const totalPaidAmount = paidInvoices.reduce(
+      (sum, inv) => sum + (inv.total || 0),
+      0
+    );
+
+    const totalInvoicedAmount = invoices.reduce(
+      (sum, inv) => sum + (inv.total || 0),
+      0
+    );
+
+    const collectionEfficiency =
+      totalInvoicedAmount > 0
+        ? ((totalPaidAmount / totalInvoicedAmount) * 100).toFixed(1)
+        : 0;
+
+    // ----------------------------
+    // Final Response
+    // ----------------------------
     const insights = [
-      `Total number of invoices: ${totalInvoice}`,
-      `Total paid invoices: ${paidInvoice.length}`,
-      `Total unpaid/pending invoices: ${unpaidInvoice.length}`,
-      `Total revenue from paid invoices: ${totalRevenue.toFixed(2)}`,
-      `Total outstanding amount from unpaid/pending invoices: ${totalOutstanding.toFixed(2)}`,
-      `Recent invoices (last 5): ${recentInvoicesSummary.join(", ")}`
+      `This month's collected revenue is $${thisMonthPaid.toFixed(
+        2
+      )} (${trend}% vs last month).`,
+      slowClients.length
+        ? `Your slowest-paying client is ${slowClients[0].client}, averaging ${slowClients[0].avgDaysToPay} days to pay.`
+        : "No paid invoices yet to analyze client payment speed.",
+      `Your collection efficiency score is ${collectionEfficiency}%. Higher scores indicate faster and more reliable payments.`,
     ];
 
-    res.status(200).json({ insights });
+    res.status(200).json({
+      insights,
+      monthlyRevenue: {
+        thisMonth: thisMonthPaid,
+        lastMonth: lastMonthPaid,
+        trendPercent: trend,
+      },
+      slowPayingClients: slowClients,
+      collectionEfficiencyScore: Number(collectionEfficiency),
+    });
   } catch (error) {
-    console.error("Error in generating dashboard summary with AI:", error);
-    res.status(500).json({ message: "Failed to generate dashboard summary.", details: error.message });
+    console.error("Error in generating dashboard summary:", error);
+    res.status(500).json({
+      message: "Failed to generate dashboard summary.",
+      details: error.message,
+    });
   }
 };
 
-
-module.exports = { parseInvoiceFromText, generateReminderEmail, getDashboardSummary };
+module.exports = {
+  parseInvoiceFromText,
+  generateReminderEmail,
+  getDashboardSummary,
+};
