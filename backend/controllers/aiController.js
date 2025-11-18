@@ -114,7 +114,7 @@ const generateReminderEmail = async (req, res) => {
 };
 
 /**
- * 3. DASHBOARD SUMMARY (unchanged)
+ * 3. DASHBOARD SUMMARY
  */
 const getDashboardSummary = async (req, res) => {
   try {
