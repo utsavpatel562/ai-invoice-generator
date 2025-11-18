@@ -2,9 +2,8 @@ const { GoogleGenerativeAI } = require("@google/generative-ai");
 const moment = require("moment");
 const Invoice = require("../modules/Invoice");
 
-// Initialize Gemini with the only valid stable model
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest" });
+const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
 /**
  * 1. PARSE INVOICE TEXT
@@ -55,11 +54,11 @@ const parseInvoiceFromText = async (req, res) => {
 };
 
 /**
- * 2. GENERATE REMINDER EMAIL
+ * 2. GENERATE REMINDER EMAIL — FIXED & STABLE
  */
 const generateReminderEmail = async (req, res) => {
   try {
-    const { invoiceId } = req.body;
+    const invoiceId = req.body.invoiceId?.trim();
 
     if (!invoiceId) {
       return res.status(400).json({ message: "Invoice ID required" });
@@ -70,15 +69,27 @@ const generateReminderEmail = async (req, res) => {
       return res.status(404).json({ message: "Invoice not found" });
     }
 
+    // Clean safe fallback values
+    const clientName = invoice.billTo?.clientName || "Client";
+    const invoiceNumber = invoice.invoiceNumber || "N/A";
+    const amount = invoice.total?.toFixed(2) || "0.00";
+    const dueDate = invoice.dueDate
+      ? new Date(invoice.dueDate).toLocaleDateString()
+      : "Not specified";
+
     const prompt = `
-      Write a payment reminder email:
+      Write a professional payment reminder email.
 
-      Client: ${invoice.billTo?.clientName}
-      Invoice #: ${invoice.invoiceNumber}
-      Amount: ${invoice.total.toFixed(2)}
-      Due Date: ${new Date(invoice.dueDate).toLocaleDateString()}
+      Client: ${clientName}
+      Invoice Number: ${invoiceNumber}
+      Amount Due: $${amount}
+      Due Date: ${dueDate}
 
-      Start with "Subject:".
+      Requirements:
+      - Start with "Subject:"
+      - Include a clear body message
+      - Be polite and concise
+      - End with a thank you
     `;
 
     const result = await model.generateContent(prompt);
@@ -95,7 +106,7 @@ const generateReminderEmail = async (req, res) => {
 };
 
 /**
- * 3. DASHBOARD SUMMARY
+ * 3. DASHBOARD SUMMARY (unchanged)
  */
 const getDashboardSummary = async (req, res) => {
   try {
