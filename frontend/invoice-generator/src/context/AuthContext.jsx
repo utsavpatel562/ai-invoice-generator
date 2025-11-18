@@ -1,4 +1,6 @@
 import { createContext, useContext, useEffect, useState } from "react";
+import axiosInstance from "../utils/axiosInstance";
+import { API_PATHS } from "../utils/apiPaths";
 
 const AuthContext = createContext();
 
@@ -54,6 +56,19 @@ export const AuthProvider = ({ children }) => {
     window.location.href = "/";
   };
 
+  const refreshUser = async () => {
+    try {
+      const res = await axiosInstance.get(API_PATHS.AUTH.GET_PROFILE);
+
+      localStorage.setItem("user", JSON.stringify(res.data));
+      setUser(res.data);
+
+      return res.data;
+    } catch (error) {
+      console.error("Failed to refresh user:", error);
+    }
+  };
+
   const updateUser = (updatedUserData) => {
     const newUserData = { ...user, ...updatedUserData };
     localStorage.setItem("user", JSON.stringify(newUserData));
@@ -68,6 +83,7 @@ export const AuthProvider = ({ children }) => {
     logout,
     updateUser,
     checkAuthStatus,
+    refreshUser,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
