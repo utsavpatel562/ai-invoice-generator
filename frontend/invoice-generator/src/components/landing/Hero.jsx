@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import HERO_IMG from "../../assets/hero_img.jpg";
+import HERO_IMG from "../../assets/hero_img.png";
 import { useAuth } from "../../context/AuthContext";
 const Hero = () => {
   const { isAuthenticated } = useAuth();
