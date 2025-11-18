@@ -3,7 +3,7 @@ const moment = require("moment");
 const Invoice = require("../modules/Invoice");
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
 /**
  * 1. PARSE INVOICE TEXT
@@ -31,9 +31,16 @@ const parseInvoiceFromText = async (req, res) => {
     `;
 
     const result = await model.generateContent(prompt);
-    const aiText = result.response.text();
+    let aiText = result.response.text();
+
+    // 🟢 REMOVE CODE BLOCKS
+    aiText = aiText
+      .replace(/```json/gi, "")
+      .replace(/```/g, "")
+      .trim();
 
     let json;
+
     try {
       json = JSON.parse(aiText);
     } catch (err) {
@@ -52,6 +59,7 @@ const parseInvoiceFromText = async (req, res) => {
     });
   }
 };
+
 
 /**
  * 2. GENERATE REMINDER EMAIL — FIXED & STABLE

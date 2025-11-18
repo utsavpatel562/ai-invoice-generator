@@ -61,7 +61,7 @@ const ReminderModal = ({ isOpen, onClose, invoiceId }) => {
             </h3>
 
             <button
-              className="text-slate-400 hover:text-slate-600"
+              className="text-slate-400 hover:text-slate-600 cursor-pointer"
               onClick={onClose}
             >
               <X className="w-5 h-5" />

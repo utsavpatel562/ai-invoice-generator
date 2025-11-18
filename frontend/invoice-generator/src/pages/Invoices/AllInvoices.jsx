@@ -6,6 +6,7 @@ import {
   Search,
   FileText,
   Plus,
+  Sparkles,
   AlertCircle,
   Mail,
   Edit,
@@ -15,6 +16,7 @@ import { useNavigate } from "react-router-dom";
 import Button from "../../components/ui/Button";
 import { useEffect, useMemo, useState } from "react";
 import ReminderModal from "./ReminderModal";
+import CreateWithAiModal from "./CreateWithAiModal";
 
 const AllInvoices = () => {
   const [invoices, setInvoices] = useState([]);
@@ -22,7 +24,7 @@ const AllInvoices = () => {
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
-  // const [isAiModalOpen, setIsAiModalOpen] = useState(false);
+  const [isAiModalOpen, setIsAiModalOpen] = useState(false);
   const [isReminderModalOpen, setIsReminderModalOpen] = useState(false);
   const [selectedInvoiceId, setSelectedInvoiceId] = useState(null);
   const [statusChangeLoading, setStatusChangeLoading] = useState({});
@@ -112,10 +114,10 @@ const AllInvoices = () => {
 
   return (
     <div className="space-y-6">
-      {/* <CreateWithAiModal
+      <CreateWithAiModal
         isOpen={isAiModalOpen}
         onClose={() => setIsAiModalOpen(false)}
-      /> */}
+      />
       <ReminderModal
         isOpen={isReminderModalOpen}
         onClose={() => setIsReminderModalOpen(false)}
@@ -131,13 +133,13 @@ const AllInvoices = () => {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          {/* <Button
+          <Button
             variant="secondary"
             onClick={() => setIsAiModalOpen(true)}
             icon={Sparkles}
           >
             Create with AI
-          </Button> */}
+          </Button>
           <Button onClick={() => navigate("/invoices/new")} icon={Plus}>
             Create Invoice
           </Button>

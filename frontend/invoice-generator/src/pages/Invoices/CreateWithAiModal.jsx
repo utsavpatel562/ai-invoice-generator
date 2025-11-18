@@ -1,5 +1,5 @@
 import { Sparkles, X } from "lucide-react";
-import Button from "../ui/Button";
+import Button from "../../components/ui/Button";
 import TextareaField from "../../components/ui/TextareaField";
 import axiosInstance from "../../utils/axiosInstance";
 import { API_PATHS } from "../../utils/apiPaths";
